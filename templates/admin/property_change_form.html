@@ -1,0 +1,36 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.6.1/dist/geosearch.css"/>
+<style>
+    #map-container {
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    #map {
+        height: 500px;
+        width: 100%;
+    }
+    .geosearch { margin-top: 10px; }
+</style>
+{% endblock %}
+
+{% block after_field_sets %}
+<div id="map-container">
+    <h2>Поиск местоположения</h2>
+    <div id="map"></div>
+</div>
+{{ block.super }}
+{% endblock %}
+
+{% block footer %}
+{{ block.super }}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-geosearch@3.6.1/dist/geosearch.umd.js"></script>
+<script src="{% static 'admin/js/location_picker.js' %}"></script>
+{% endblock %}
