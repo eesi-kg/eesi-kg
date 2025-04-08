@@ -36,6 +36,7 @@ frozenlist==1.5.0
 GDAL==3.10.2
 geographiclib==2.0
 geoip2==5.0.1
+gunicorn==23.0.0
 idna==3.10
 inflection==0.5.1
 iniconfig==2.1.0
@@ -76,4 +77,5 @@ urllib3==1.26.20
 uuid==1.30
 vine==5.1.0
 wcwidth==0.2.13
+whitenoise==6.9.0
 yarl==1.18.3
