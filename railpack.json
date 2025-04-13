@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "steps": {
+    "gdal": {
+      "commands": [
+        "apt-get install -y gdal-bin libgdal-dev"
+      ]
+    },
+    "install": {
+      "inputs": [
+        { "step": "gdal" }
+      ],
+      "commands": [
+        "python -m venv /app/.venv",
+        "pip install -r requirements.txt"
+      ]
+    }
+  },
+  "deploy": {
+    "startCommand": "celery -A core worker --loglevel=info && python manage.py migrate && gunicorn core.wsgi"
+  }
+}
