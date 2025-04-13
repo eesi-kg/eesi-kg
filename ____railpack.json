@@ -1,15 +1,12 @@
 {
   "$schema": "https://schema.railpack.com",
+  "provider": "python",
+  "packages": {
+    "python": "3.9"
+  },
   "steps": {
-    "gdal": {
-      "commands": [
-        "apt-get install -y gdal-bin libgdal-dev"
-      ]
-    },
     "install": {
-      "inputs": [
-        { "step": "gdal" }
-      ],
+      "image": "ghcr.io/andrii-rieznik/python-gdal",
       "commands": [
         "python -m venv /app/.venv",
         "pip install -r requirements.txt"
@@ -17,6 +14,9 @@
     }
   },
   "deploy": {
+    "base": {
+      "image": "ghcr.io/andrii-rieznik/python-gdal"
+    },
     "startCommand": "celery -A core worker --loglevel=info && python manage.py migrate && gunicorn core.wsgi"
   }
 }
