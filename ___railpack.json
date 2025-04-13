@@ -17,6 +17,6 @@
     "base": {
       "image": "ghcr.io/andrii-rieznik/python-gdal"
     },
-    "startCommand": "celery -A core worker --loglevel=info && python manage.py migrate && gunicorn core.wsgi"
+    "startCommand": "celery -A core worker --loglevel=info && python manage.py migrate && gunicorn core.wsgi --bind 0.0.0.0:8000"
   }
 }

@@ -685,7 +685,7 @@ class RealEstateAd(models.Model):
             from reportlab.platypus import Paragraph
             
             # Регистрируем шрифт
-            font_path = '/System/Library/Fonts/Supplemental/Arial Bold.ttf'
+            font_path = 'templates/fonts/Arial Bold.ttf'
             pdfmetrics.registerFont(TTFont('ArialBold', font_path))
             
             # Создаем PDF
