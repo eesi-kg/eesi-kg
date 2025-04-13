@@ -1,7 +1,2 @@
-providers = ['...', 'python']
-
 [phases.setup]
 aptPkgs = ["...", "gdal-bin", "libgdal-dev"]
-
-[phases.build]
-cmds = ['yarn run server:build']
