@@ -34,7 +34,7 @@ drf-yasg==1.21.9
 exceptiongroup==1.2.2
 freezegun==1.5.1
 frozenlist==1.5.0
-GDAL==3.10.2
+GDAL==3.6.2
 geographiclib==2.0
 geoip2==5.0.1
 gunicorn==23.0.0
