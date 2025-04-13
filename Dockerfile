@@ -28,9 +28,4 @@ COPY . .
 EXPOSE 8000
 
 # Default command: start Gunicorn for Django
-CMD [
-"celery", "-A", "core", "worker", "--loglevel=info",
-"&&",
-"python", "manage.py", "migrate",
-"&&",
-"gunicorn", "core.wsgi", "--bind", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "migrate","&&","gunicorn", "core.wsgi", "--bind", "0.0.0.0:8000"]
