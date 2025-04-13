@@ -206,11 +206,8 @@ class CommercialAd(RealEstateAd):
         related_name="commercial_max_floor",
         verbose_name="количество этажей"
     )
-    area = models.PositiveSmallIntegerField(
-        verbose_name="площадь коммерческой недвижимости m2"
-    )
     total_area = models.PositiveSmallIntegerField(
-        verbose_name="площадь участка", blank=True, null=True
+        verbose_name="площадь коммерческой недвижимости m2"
     )
 
     def __str__(self):

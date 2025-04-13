@@ -27,7 +27,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_user(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_active', False)
+        extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('role', UserRole.CUSTOMER)
         return self._create_user(email, password, **extra_fields)
 
@@ -65,8 +65,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         choices=UserRole.choices,
         default=UserRole.CUSTOMER
     )
-    is_active = models.BooleanField('активный', default=False)
-    is_staff = models.BooleanField('статус модератора', default=False)
+    is_active = models.BooleanField('активный', default=True)
+    is_staff = models.BooleanField('статус администратора', default=False)
     is_company = models.BooleanField('статус компании', default=False)
     date_joined = models.DateTimeField('время присоеденения', default=timezone.now)
 

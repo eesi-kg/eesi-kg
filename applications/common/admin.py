@@ -1,6 +1,12 @@
 from django.contrib import admin
 from django.db.models import F, OrderBy
-from .models import Region, City, Currency, Subscription, CountryName
+from .models import Region, City, Currency, Subscription, CountryName, ExchangeRate
+
+
+@admin.register(ExchangeRate)
+class ExchangeRateAdmin(admin.ModelAdmin):
+    list_display = ('rate', 'updated_at')
+    readonly_fields = ('updated_at',)
 
 
 @admin.register(CountryName)

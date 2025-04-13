@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import (Floor, Series, ResidentialComplex, RoomType, BuildingType, Year, RealEstateAdImage,
                      ConditionType, HeatingType, Developer, PhoneNumber, District, ObjectType,
                      RoomLocation, Telephone, Internet, BathRoom, Gas, Balcony, MainDoor, Parking, Furniture, FloorType,
-                     Safety, Other, Document, Exchange, )
+                     Safety, Other, Document, Exchange, MarketingImage, )
 
 
 class RealEstateAdImageInline(admin.TabularInline):
@@ -170,3 +170,12 @@ class DocumentAdmin(admin.ModelAdmin):
 class ExchangeAdmin(admin.ModelAdmin):
     list_display = ('exchange_type',)
     search_fields = ('exchange_type',)
+
+
+@admin.register(MarketingImage)
+class MarketingImageAdmin(admin.ModelAdmin):
+    list_display = ('property_type', 'is_active', 'created_at')
+    list_editable = ('is_active',)
+    list_filter = ('property_type', 'is_active')
+    search_fields = ('property_type',)
+    ordering = ('-created_at',)

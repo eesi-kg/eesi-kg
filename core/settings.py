@@ -20,7 +20,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', '').split(',')
 CSRF_TRUSTED_ORIGINS = ['https://*.up.railway.app']
 
 
@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # libraries
-
     'debug_toolbar',
     'rest_framework',
     'django_filters',
@@ -50,12 +49,12 @@ INSTALLED_APPS = [
     'cloudinary_storage',
 
     # applications
-    'applications.real_estate',
-    'applications.common',
-    'applications.user',
     'applications.real_estate_advertisement',
     'applications.vehicle_advertisement',
-    'applications.vehicle'
+    'applications.real_estate',
+    'applications.vehicle',
+    'applications.common',
+    'applications.user',
 ]
 
 MIDDLEWARE = [
@@ -173,6 +172,14 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    }
 }
 
 
@@ -209,9 +216,10 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
 QR_BASE_URL = config('QR_BASE_URL')
 
-INTERNAL_IPS = [
-    '127.0.0.1',
-]
+if DEBUG:
+    INTERNAL_IPS = [
+        '127.0.0.1',
+    ]
 
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.history.HistoryPanel',
@@ -271,8 +279,12 @@ SPECTACULAR_SETTINGS = {
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config("CLOUD_NAME"),
     'API_KEY': config("API_KEY"),
-    'API_SECRET': config("API_SECRET")
+    'API_SECRET': config("API_SECRET"),
+    'SECURE': True
 }
+
+CLOUDINARY_URL = f"cloudinary://{CLOUDINARY_STORAGE['API_KEY']}:{CLOUDINARY_STORAGE['API_SECRET']}@{CLOUDINARY_STORAGE['CLOUD_NAME']}"
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
+LOGO_PATH = "/Users/jumabekovs/Desktop/Eesi-Back-End/templates/images/logo.png"

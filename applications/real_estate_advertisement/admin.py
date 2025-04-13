@@ -146,7 +146,7 @@ class BaseRealEstateAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ['user', 'is_active', 'public_id', 'created_at', 'updated_at',
                        'display_latitude', 'display_longitude', 'qr_preview', 'property_type', 'is_active', 'view_count',
-                       'qr_code']
+                       ]
     autocomplete_fields = ['region', 'city', 'district', 'telephone']
     date_hierarchy = 'created_at'
     list_per_page = 20
@@ -167,7 +167,7 @@ class BaseRealEstateAdmin(admin.ModelAdmin):
                        'document', 'description', 'measurements_docs', 'designing_docs')
         }),
         (_('Цена и условия сделки'), {
-            'fields': ('price', 'currency', 'is_total_price', 'exchange', 'installment', 'mortgage')
+            'fields': ('price', 'currency', 'price_kgs', 'is_total_price', 'exchange', 'installment', 'mortgage')
         }),
         (_('Статус объявления'), {
             'fields': ('subscription', 'is_featured', 'view_count', 'qr_code', )
@@ -321,7 +321,7 @@ class CommercialAdAdmin(BaseRealEstateAdmin):
     fieldsets = BaseRealEstateAdmin.fieldsets + (
         (_('Специфика коммерческой недвижимости'), {
             'fields': ('object_type', 'residential_complex', 'building_type', 'construction_year', 'floor',
-                       'max_floor', 'area', 'total_area', 'ENI_code', 'rent_period')
+                       'max_floor', 'total_area', 'ENI_code', 'rent_period')
         }),
     )
     list_filter = BaseRealEstateAdmin.list_filter + ['object_type', 'condition']

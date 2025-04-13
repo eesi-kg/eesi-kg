@@ -141,3 +141,30 @@ class CountryName(models.Model):
         verbose_name = _('Страна')
         verbose_name_plural = _('Страны')
         ordering = ['name']
+        
+
+class ExchangeRate(models.Model):
+    """Модель для хранения курса валют"""
+    rate = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        verbose_name="Курс USD к KGS",
+        help_text="Текущий курс доллара к сому"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Дата обновления"
+    )
+
+    class Meta:
+        verbose_name = "Курс валюты"
+        verbose_name_plural = "Курсы валют"
+
+    def __str__(self):
+        return f"1 USD = {self.rate} KGS (обновлено: {self.updated_at.strftime('%d.%m.%Y %H:%M')})"
+
+    @classmethod
+    def get_current_rate(cls):
+        """Получить текущий курс валюты"""
+        return cls.objects.latest('updated_at').usd_to_kgs

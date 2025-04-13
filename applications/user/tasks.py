@@ -1,7 +1,7 @@
 from celery import shared_task
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import User
 from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)

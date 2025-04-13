@@ -3,6 +3,7 @@ from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, exte
 from rest_framework import serializers
 from .models import ApartmentAd, HouseAd, CommercialAd, RoomAd, DachaAd, PlotAd, ParkingAd
 from ..common.serializers import SubscriptionSerializer, ExchangeSerializer
+from ..real_estate.models import MarketingImage
 from ..real_estate.serializers import RealEstateAdImageSerializer, PhoneNumberRealEstateSerializer, \
     ResidentialComplexSerializer, OtherSerializer, DocumentSerializer, SafetyRealEstateSerializer
 
@@ -172,10 +173,21 @@ class PropertyCharacteristicsSerializer(serializers.Serializer):
 class LocationSerializer(serializers.Serializer):
     region = serializers.CharField(source="region.region")
     city = serializers.CharField(source="city.city")
-    district = serializers.CharField(source="district.district")
+    district = serializers.SerializerMethodField()
     address = serializers.CharField()
     latitude = serializers.FloatField()
     longitude = serializers.FloatField()
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_district(self, obj):
+        return getattr(obj.district, 'district', None)
+
+
+class ImageSerializer(serializers.Serializer):
+    url = serializers.URLField()
+    type = serializers.CharField()
+    is_main = serializers.BooleanField(required=False)
+    property_type = serializers.CharField(required=False)
 
 
 @extend_schema_serializer(
@@ -226,11 +238,9 @@ class BaseRealEstateAdSerializer(serializers.ModelSerializer):
     mortgage = serializers.BooleanField()
     measurements_docs = serializers.SerializerMethodField()
     designing_docs = serializers.SerializerMethodField()
-    images = RealEstateAdImageSerializer(
-        many=True,
-        source="images.all",
+    images = serializers.SerializerMethodField(
         help_text="URL-ы картинок ",
-        read_only=True)
+    )
     contact_number = PhoneNumberRealEstateSerializer(
         many=True,
         source="real_estate_phones.all",
@@ -279,6 +289,36 @@ class BaseRealEstateAdSerializer(serializers.ModelSerializer):
         if obj.designing_docs and request:
             return request.build_absolute_uri(obj.designing_docs.url)
         return None
+
+    @extend_schema_field(serializers.ListSerializer(child=ImageSerializer()))
+    def get_images(self, obj):
+        request = self.context.get('request')
+        images = []
+        
+        # Add real estate images
+        for image in obj.images.all():
+            if image.image and request:
+                images.append({
+                    'url': request.build_absolute_uri(image.image.url),
+                    'is_main': image.is_main,
+                    'type': 'property'
+                })
+        
+        # Add marketing images for this property type
+        marketing_images = MarketingImage.objects.filter(
+            property_type=obj.property_type,
+            is_active=True
+        ).order_by('-created_at')
+        
+        for marketing_image in marketing_images:
+            if marketing_image.image and request:
+                images.append({
+                    'url': request.build_absolute_uri(marketing_image.image.url),
+                    'type': 'marketing',
+                    'property_type': marketing_image.property_type
+                })
+        
+        return images
 
 
 class ApartmentAdSerializer(BaseRealEstateAdSerializer):
@@ -347,9 +387,6 @@ class CommercialAdSerializer(BaseRealEstateAdSerializer):
     construction_year = serializers.SerializerMethodField()
     floor = serializers.CharField(source="floor.floor")
     max_floor = serializers.CharField(source="max_floor.floor")
-    area = serializers.SerializerMethodField(
-        help_text="В квадратных метрах m2",
-    )
     total_area = serializers.SerializerMethodField(
         help_text="В квадратных метрах m2",
     )
@@ -368,10 +405,6 @@ class CommercialAdSerializer(BaseRealEstateAdSerializer):
     @extend_schema_field(OpenApiTypes.STR)
     def get_total_area(self, obj):
         return f"{obj.total_area} m2"
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_area(self, obj):
-        return f"{obj.area} m2"
 
 
 class RoomAdSerializer(BaseRealEstateAdSerializer):

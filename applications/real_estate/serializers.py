@@ -4,7 +4,7 @@ from rest_framework import serializers
 from .models import (Telephone, Internet, BathRoom, Gas, Balcony, MainDoor, Parking, Furniture,
                      FloorType, Safety, Other, Document, Developer, ResidentialComplex, Series, BuildingType,
                      HeatingType, ConditionType, RoomType, Year, Floor, ObjectType, RoomLocation, RealEstateAd,
-                     PhoneNumber, RealEstateAdImage)
+                     PhoneNumber, RealEstateAdImage, MarketingImage)
 
 
 class TelephoneSerializer(serializers.ModelSerializer):
@@ -162,6 +162,21 @@ class RealEstateAdImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = RealEstateAdImage
         fields = ['image', ]
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None
+
+
+class MarketingImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MarketingImage
+        fields = ['image']
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_image(self, obj):

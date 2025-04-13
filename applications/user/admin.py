@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Group
+
 from .models import User
 
 
@@ -39,3 +41,4 @@ class CustomUserAdmin(UserAdmin):
         if obj and request.user.is_company and obj.user != request.user:
             return False
         return super().has_change_permission(request, obj)
+    

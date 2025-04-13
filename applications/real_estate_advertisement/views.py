@@ -67,7 +67,6 @@ class BaseRealEstateViewSet(ViewCountMixin, ModelViewSet):
             'city',
             'realestatead_ptr__price',
             'region',
-            'currency',
         ).prefetch_related(
             Prefetch('images',
                      queryset=self.get_image_prefetch_queryset()),
@@ -78,7 +77,6 @@ class BaseRealEstateViewSet(ViewCountMixin, ModelViewSet):
             'city',
             'realestatead_ptr__price',
             'region',
-            'currency',
             'heating_type',
             'condition',
             'internet',
