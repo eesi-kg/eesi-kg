@@ -27,5 +27,7 @@ COPY . .
 # Expose port (Gunicorn)
 EXPOSE 8000
 
+RUN python manage.py migrate
+
 # Default command: start Gunicorn for Django
-CMD ["python", "manage.py", "migrate","&&","gunicorn", "core.wsgi", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "core.wsgi", "--bind", "0.0.0.0:8000"]
