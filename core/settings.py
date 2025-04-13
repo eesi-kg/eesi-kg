@@ -252,8 +252,12 @@ LEAFLET_CONFIG = {
     'ATTRIBUTION_PREFIX': 'Real Estate Map',
 }
 
-GDAL_LIBRARY_PATH = config("GDAL_LIBRARY_PATH")
-GEOS_LIBRARY_PATH = config("GEOS_LIBRARY_PATH")
+
+# GDAL_LIBRARY_PATH = '/opt/homebrew/Cellar/gdal/3.10.2_3/lib/libgdal.36.3.10.2.dylib'
+# GDAL_LIBRARY_PATH =  '/opt/homebrew/opt/gdal/lib/libgdal.dylib'
+# GEOS_LIBRARY_PATH = '/opt/homebrew/Cellar/geos/3.12.0/lib/libgeos_c.dylib'
+GDAL_LIBRARY_PATH = os.getenv("GDAL_LIBRARY_PATH", None)
+GEOS_LIBRARY_PATH = os.getenv("GEOS_LIBRARY_PATH", None)
 
 
 SPECTACULAR_SETTINGS = {
