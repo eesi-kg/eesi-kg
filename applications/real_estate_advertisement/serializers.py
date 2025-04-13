@@ -395,7 +395,7 @@ class CommercialAdSerializer(BaseRealEstateAdSerializer):
         model = CommercialAd
         fields = [
             "object_type", "building_type", "construction_year",
-            "floor", "max_floor", "area", "total_area"
+            "floor", "max_floor", "total_area"
         ] + BaseRealEstateAdSerializer.Meta.fields
 
     @extend_schema_field(OpenApiTypes.STR)

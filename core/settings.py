@@ -221,6 +221,7 @@ if DEBUG:
         '127.0.0.1',
     ]
 
+
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.history.HistoryPanel',
     'debug_toolbar.panels.versions.VersionsPanel',
@@ -251,9 +252,8 @@ LEAFLET_CONFIG = {
     'ATTRIBUTION_PREFIX': 'Real Estate Map',
 }
 
-
-# GDAL_LIBRARY_PATH = '/opt/homebrew/Cellar/gdal/3.10.2_3/lib/libgdal.36.3.10.2.dylib'
-# GEOS_LIBRARY_PATH = '/opt/homebrew/Cellar/geos/3.12.0/lib/libgeos_c.dylib'
+GDAL_LIBRARY_PATH = config("GDAL_LIBRARY_PATH")
+GEOS_LIBRARY_PATH = config("GEOS_LIBRARY_PATH")
 
 
 SPECTACULAR_SETTINGS = {
