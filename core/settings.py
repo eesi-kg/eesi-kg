@@ -252,8 +252,8 @@ LEAFLET_CONFIG = {
 }
 
 
-GDAL_LIBRARY_PATH = '/opt/homebrew/Cellar/gdal/3.10.2_3/lib/libgdal.36.3.10.2.dylib'
-GEOS_LIBRARY_PATH = '/opt/homebrew/Cellar/geos/3.12.0/lib/libgeos_c.dylib'
+# GDAL_LIBRARY_PATH = '/opt/homebrew/Cellar/gdal/3.10.2_3/lib/libgdal.36.3.10.2.dylib'
+# GEOS_LIBRARY_PATH = '/opt/homebrew/Cellar/geos/3.12.0/lib/libgeos_c.dylib'
 
 
 SPECTACULAR_SETTINGS = {

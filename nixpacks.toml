@@ -1,7 +1,6 @@
 providers = ['...', 'python']
 
 [phases.setup]
-nixPkgs = ['...', 'cowsay']
 aptPkgs = ["...", "gdal-bin", "libgdal-dev"]
 
 [phases.build]
