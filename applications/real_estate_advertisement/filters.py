@@ -1,4 +1,3 @@
-# applications/real_estate/filters.py
 import django_filters
 from django_filters import rest_framework as filters
 
@@ -171,3 +170,44 @@ class ParkingAdFilter(PriceRangeFilter):
     class Meta:
         model = ParkingAd
         fields = ['residential_complex']
+
+
+class MainPageFilter(PriceRangeFilter):
+    PROPERTY_TYPE_CHOICES = (
+        ('apartment', 'Квартиры'),
+        ('house', 'Дома'),
+        ('commercial', 'Коммерческие'),
+        ('room', 'Комнаты'),
+        ('plot', 'Участки'),
+        ('dacha', 'Дачи'),
+        ('parking', 'Парковки/Гаражи'),
+    )
+    property_type = filters.ChoiceFilter(choices=PROPERTY_TYPE_CHOICES, method='filter_by_property_type')
+    city = filters.NumberFilter(field_name='city__id')
+    region = filters.NumberFilter(field_name='region__id')
+
+    class Meta:
+        model = None  # Will be set dynamically
+        fields = ['property_type', 'city', 'region']
+
+    def filter_by_property_type(self, queryset, name, value):
+        model_mappings = {
+            'apartment': (ApartmentAd, ApartmentAdFilter),
+            'house': (HouseAd, HouseAdFilter),
+            'commercial': (CommercialAd, CommercialAdFilter),
+            'room': (RoomAd, RoomAdFilter),
+            'plot': (PlotAd, PlotAdFilter),
+            'dacha': (DachaAd, DachaAdFilter),
+            'parking': (ParkingAd, ParkingAdFilter),
+        }
+
+        if value in model_mappings:
+            model_class, filter_class = model_mappings[value]
+            # Create a new queryset for the specific model
+            model_queryset = model_class.objects.filter(is_active=True)
+
+            # Apply model-specific filters
+            model_filter = filter_class(self.request.query_params, queryset=model_queryset)
+            return model_filter.qs
+
+        return queryset.none()

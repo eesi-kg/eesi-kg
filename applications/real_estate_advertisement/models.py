@@ -94,8 +94,10 @@ class ApartmentAd(RealEstateAd):
             raise ValidationError("Нет этажей.")
 
     def save(self, *args, **kwargs):
-        if not self.title or self.title:
-            self.title = f"{self.rooms}комн.кв,{self.floor}.,{self.total_area} m2"
+        if self.ad_type == 'sale':
+            self.title = f"Продается {self.get_property_type_display()}"
+        elif self.ad_type == 'rent':
+            self.title = f"Сдается {self.get_property_type_display()}"
         super().save(*args, **kwargs)
 
     def get_qr_url(self):
@@ -144,8 +146,10 @@ class HouseAd(RealEstateAd):
         return f"{self.get_ad_type_display()} {self.title}"
 
     def save(self, *args, **kwargs):
-        if not self.title:
-            self.title = f"Дом {self.rooms}комн.кв.,{self.total_area} m2"
+        if self.ad_type == 'sale':
+            self.title = f"Продается {self.get_property_type_display()}"
+        elif self.ad_type == 'rent':
+            self.title = f"Сдается {self.get_property_type_display()}"
         super().save(*args, **kwargs)
 
     def get_qr_url(self):
@@ -222,8 +226,10 @@ class CommercialAd(RealEstateAd):
             raise ValidationError("Нет этажей.")
 
     def save(self, *args, **kwargs):
-        if not self.title:
-            self.title = f"Комм.недв.,{self.total_area} m2"
+        if self.ad_type == 'sale':
+            self.title = f"Продается {self.get_property_type_display()}"
+        elif self.ad_type == 'rent':
+            self.title = f"Сдается {self.get_property_type_display()}"
         super().save(*args, **kwargs)
 
     def get_qr_url(self):
@@ -290,8 +296,10 @@ class RoomAd(RealEstateAd):
             raise ValidationError("Нет этажей.")
 
     def save(self, *args, **kwargs):
-        if not self.title:
-            self.title = f"Комната {self.room_location},{self.total_area} m2"
+        if self.ad_type == 'sale':
+            self.title = f"Продается {self.get_property_type_display()}"
+        elif self.ad_type == 'rent':
+            self.title = f"Сдается {self.get_property_type_display()}"
         super().save(*args, **kwargs)
 
     def get_qr_url(self):
@@ -316,8 +324,10 @@ class PlotAd(RealEstateAd):
         return f"{self.get_ad_type_display()} {self.title}"
 
     def save(self, *args, **kwargs):
-        if not self.title:
-            self.title = f"Участок {self.total_area} соток"
+        if self.ad_type == 'sale':
+            self.title = f"Продается {self.get_property_type_display()}"
+        elif self.ad_type == 'rent':
+            self.title = f"Сдается {self.get_property_type_display()}"
         super().save(*args, **kwargs)
 
     def get_qr_url(self):
@@ -359,8 +369,10 @@ class DachaAd(RealEstateAd):
         return f"{self.get_ad_type_display()} {self.title}"
 
     def save(self, *args, **kwargs):
-        if not self.title:
-            self.title = f"Дача {self.total_area} соток."
+        if self.ad_type == 'sale':
+            self.title = f"Продается {self.get_property_type_display()}"
+        elif self.ad_type == 'rent':
+            self.title = f"Сдается {self.get_property_type_display()}"
         super().save(*args, **kwargs)
 
     def get_qr_url(self):
@@ -390,8 +402,10 @@ class ParkingAd(RealEstateAd):
         return f"{self.get_ad_type_display()} {self.residential_complex}"
 
     def save(self, *args, **kwargs):
-        if not self.title:
-            self.title = f"Паркинг в {self.residential_complex}"
+        if self.ad_type == 'sale':
+            self.title = f"Продается {self.get_property_type_display()}"
+        elif self.ad_type == 'rent':
+            self.title = f"Сдается {self.get_property_type_display()}"
         super().save(*args, **kwargs)
 
     def get_qr_url(self):

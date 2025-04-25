@@ -1,20 +1,21 @@
 from django.urls import path, include
-from rest_framework import routers
+from rest_framework.routers import DefaultRouter
+from .views import (
+    ApartmentAdViewSet, HouseAdViewSet, CommercialAdViewSet,
+    RoomAdViewSet, PlotAdViewSet, DachaAdViewSet, ParkingAdViewSet,
+    MainPageViewSet
+)
 
-from .views import (ApartmentAdViewSet, HouseAdViewSet, CommercialAdViewSet, RoomAdViewSet, DachaAdViewSet,
-                    PlotAdViewSet, ParkingAdViewSet)
-
-router = routers.DefaultRouter()
-router.register("apartments", ApartmentAdViewSet, basename="apartments")
-router.register("houses", HouseAdViewSet, basename="houses")
-router.register("commercials", CommercialAdViewSet, basename="commercials")
-router.register("rooms", RoomAdViewSet, basename="rooms")
-router.register("dachas", DachaAdViewSet, basename="dachas")
-router.register("plots", PlotAdViewSet, basename="plots")
-router.register("parkings", ParkingAdViewSet, basename="parkings")
-
+router = DefaultRouter()
+router.register('apartments', ApartmentAdViewSet, basename='apartment')
+router.register('houses', HouseAdViewSet, basename='house')
+router.register('commercial', CommercialAdViewSet, basename='commercial')
+router.register('rooms', RoomAdViewSet, basename='room')
+router.register('plots', PlotAdViewSet, basename='plot')
+router.register('dachas', DachaAdViewSet, basename='dacha')
+router.register('parkings', ParkingAdViewSet, basename='parking')
+router.register('', MainPageViewSet, basename='main')
 
 urlpatterns = [
-    path("", include(router.urls)),
+    path('', include(router.urls)),
 ]
-urlpatterns += router.urls

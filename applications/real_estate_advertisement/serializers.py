@@ -349,7 +349,6 @@ class ApartmentAdSerializer(BaseRealEstateAdSerializer):
 class HouseAdSerializer(BaseRealEstateAdSerializer):
     rooms = serializers.SerializerMethodField()
     building_type = serializers.CharField(source="building_type.name")
-    construction_year = serializers.SerializerMethodField()
     floor = serializers.CharField(source="floor.floor")
     area = serializers.SerializerMethodField(
         help_text="В квадратных метрах m2",
@@ -361,12 +360,8 @@ class HouseAdSerializer(BaseRealEstateAdSerializer):
     class Meta(BaseRealEstateAdSerializer.Meta):
         model = HouseAd
         fields = [
-            "rooms", "building_type", "construction_year", "floor", "area", "total_area"
+            "rooms", "building_type", "floor", "area", "total_area"
         ] + BaseRealEstateAdSerializer.Meta.fields
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_construction_year(self, obj):
-        return getattr(obj.construction_year, 'year', None)
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_total_area(self, obj):

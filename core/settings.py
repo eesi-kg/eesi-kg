@@ -253,11 +253,11 @@ LEAFLET_CONFIG = {
 }
 
 
-# GDAL_LIBRARY_PATH = '/opt/homebrew/Cellar/gdal/3.10.2_3/lib/libgdal.36.3.10.2.dylib'
-# GDAL_LIBRARY_PATH =  '/opt/homebrew/opt/gdal/lib/libgdal.dylib'
-# GEOS_LIBRARY_PATH = '/opt/homebrew/Cellar/geos/3.12.0/lib/libgeos_c.dylib'
-GDAL_LIBRARY_PATH = os.getenv("GDAL_LIBRARY_PATH", None)
-GEOS_LIBRARY_PATH = os.getenv("GEOS_LIBRARY_PATH", None)
+GDAL_LIBRARY_PATH = '/opt/homebrew/Cellar/gdal/3.10.3/lib/libgdal.dylib'
+GEOS_LIBRARY_PATH = '/opt/homebrew/Cellar/geos/3.12.0/lib/libgeos_c.dylib'
+
+# GDAL_LIBRARY_PATH = os.getenv("GDAL_LIBRARY_PATH", None)
+# GEOS_LIBRARY_PATH = os.getenv("GEOS_LIBRARY_PATH", None)
 
 
 SPECTACULAR_SETTINGS = {
