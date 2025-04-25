@@ -1,13 +1,13 @@
 import django_filters
 from django_filters import rest_framework as filters
 
-from applications.common.models import Region, City, District
+from applications.common.models import Region, City, District, Currency, Exchange
 from .models import (
     RealEstateAd, ApartmentAd, HouseAd, CommercialAd,
     RoomAd, DachaAd, PlotAd, ParkingAd, BuildingType, Series,
     ResidentialComplex, RoomType
 )
-from ..real_estate.models import ConditionType, Document, ObjectType
+from ..real_estate.models import ConditionType, Document, ObjectType, Furniture, Developer
 
 
 class PriceRangeFilter(django_filters.FilterSet):
@@ -172,7 +172,7 @@ class ParkingAdFilter(PriceRangeFilter):
         fields = ['residential_complex']
 
 
-class MainPageFilter(PriceRangeFilter):
+class MainPageFilter(PriceRangeFilter, AreaFilter):
     PROPERTY_TYPE_CHOICES = (
         ('apartment', 'Квартиры'),
         ('house', 'Дома'),
@@ -183,12 +183,68 @@ class MainPageFilter(PriceRangeFilter):
         ('parking', 'Парковки/Гаражи'),
     )
     property_type = filters.ChoiceFilter(choices=PROPERTY_TYPE_CHOICES, method='filter_by_property_type')
-    city = filters.NumberFilter(field_name='city__id')
-    region = filters.NumberFilter(field_name='region__id')
+    region = django_filters.ModelChoiceFilter(
+        field_name='region',
+        queryset=Region.objects.all()
+    )
+    city = django_filters.ModelChoiceFilter(
+        field_name='city',
+        queryset=City.objects.all()
+    )
+    district = django_filters.ModelChoiceFilter(
+        field_name='district',
+        queryset=District.objects.all()
+    )
+    currency = django_filters.ModelChoiceFilter(
+        field_name='currency',
+        queryset=Currency.objects.all()
+    )
+    condition = django_filters.ModelChoiceFilter(
+        field_name='condition',
+        queryset=ConditionType.objects.all()
+    )
+    documents = django_filters.ModelMultipleChoiceFilter(
+        field_name='document',
+        queryset=Document.objects.all()
+    )
+    ceiling_height = django_filters.RangeFilter()
+    rooms = django_filters.ModelChoiceFilter(
+        field_name='rooms',
+        queryset=RoomType.objects.all()
+    )
+    seria = django_filters.ModelChoiceFilter(
+        field_name='series',
+        queryset=Series.objects.all()
+    )
+    exchange = django_filters.ModelChoiceFilter(
+        field_name='exchange',
+        queryset=Exchange.objects.all()
+    )
+    furniture = django_filters.ModelChoiceFilter(
+        field_name='furniture',
+        queryset=Furniture.objects.all()
+    )
+    building_type = django_filters.ModelChoiceFilter(
+        field_name='building_type',
+        queryset=BuildingType.objects.all()
+    )
+    developer = django_filters.ModelChoiceFilter(
+        field_name='developer',
+        queryset=Developer.objects.all()
+    )
+    residential_complex = django_filters.ModelChoiceFilter(
+        field_name='residential_complex',
+        queryset=ResidentialComplex.objects.all()
+    )
+    floor = django_filters.RangeFilter()
+    max_floor = django_filters.RangeFilter()
+    elevator = django_filters.BooleanFilter()
 
     class Meta:
         model = None  # Will be set dynamically
-        fields = ['property_type', 'city', 'region']
+        fields = ['region', 'city', 'district', 'currency', 'property_type', 'condition', 'furniture', 'floor',
+                  'max_floor', 'documents', 'exchange', 'seria', 'developer', 'residential_complex',  'rooms',
+                  'building_type', 'condition', 'ceiling_height', 'elevator']
 
     def filter_by_property_type(self, queryset, name, value):
         model_mappings = {

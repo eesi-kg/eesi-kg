@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ApartmentAdViewSet, HouseAdViewSet, CommercialAdViewSet,
     RoomAdViewSet, PlotAdViewSet, DachaAdViewSet, ParkingAdViewSet,
-    MainPageViewSet
+    RealEstateAdViewSet
 )
 
 router = DefaultRouter()
@@ -14,7 +14,7 @@ router.register('rooms', RoomAdViewSet, basename='room')
 router.register('plots', PlotAdViewSet, basename='plot')
 router.register('dachas', DachaAdViewSet, basename='dacha')
 router.register('parkings', ParkingAdViewSet, basename='parking')
-router.register('', MainPageViewSet, basename='main')
+router.register('', RealEstateAdViewSet, basename='main')
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -153,7 +153,7 @@ class BaseRealEstateAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (_('Основная информация'), {
-            'fields': ('public_id', 'user', 'ad_type', 'property_type',)
+            'fields': ('public_id', 'user', 'ad_type', 'property_type', 'title')
         }),
         (_('Расположение'), {
             'fields': ('region', 'city', 'district', 'link_2gis', 'address', 'latitude', 'longitude', )

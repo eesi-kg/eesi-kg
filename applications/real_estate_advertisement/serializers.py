@@ -4,86 +4,8 @@ from rest_framework import serializers
 from .models import ApartmentAd, HouseAd, CommercialAd, RoomAd, DachaAd, PlotAd, ParkingAd
 from ..common.serializers import SubscriptionSerializer, ExchangeSerializer
 from ..real_estate.models import MarketingImage
-from ..real_estate.serializers import RealEstateAdImageSerializer, PhoneNumberRealEstateSerializer, \
+from ..real_estate.serializers import PhoneNumberRealEstateSerializer, \
     ResidentialComplexSerializer, OtherSerializer, DocumentSerializer, SafetyRealEstateSerializer
-
-
-@extend_schema_serializer(
-    examples=[
-        OpenApiExample(
-            'Real Estate Listing Example',
-            value={
-                "title": "Modern 2-Bedroom Apartments",
-                "price": 325000.00,
-                "currency": "USD",
-                "city": "Bishkek",
-                "images": [
-                    {
-                        "url": "https://example.com/images/villa1.jpg",
-                    },
-                    {
-                        "url": "https://example.com/images/villa2.jpg",
-                    }
-                ],
-            },
-            response_only=True
-        )
-    ]
-)
-class BaseListRealEstateSerializer(serializers.ModelSerializer):
-    price = serializers.SerializerMethodField(help_text="Цена в валюте")
-    currency = serializers.CharField(source="currency.currency", read_only=True)
-    city = serializers.CharField(source="city.city", read_only=True)
-    title = serializers.CharField(read_only=True)
-    images = RealEstateAdImageSerializer(
-        many=True,
-        source="images.all",
-        help_text="URL-ы картинок ",
-        read_only=True
-    )
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_price(self, obj):
-        return f"{obj.price}{obj.currency}"
-
-    class Meta:
-        abstract = True
-        fields = ["public_id", "price", "city", "title", "images"]
-
-
-class ApartmentListRealEstate(BaseListRealEstateSerializer):
-    class Meta(BaseListRealEstateSerializer.Meta):
-        model = ApartmentAd
-
-
-class HouseListRealEstate(BaseListRealEstateSerializer):
-    class Meta(BaseListRealEstateSerializer.Meta):
-        model = HouseAd
-
-
-class CommercialListRealEstate(BaseListRealEstateSerializer):
-    class Meta(BaseListRealEstateSerializer.Meta):
-        model = CommercialAd
-
-
-class RoomListRealEstate(BaseListRealEstateSerializer):
-    class Meta(BaseListRealEstateSerializer.Meta):
-        model = RoomAd
-
-
-class DachaListRealEstate(BaseListRealEstateSerializer):
-    class Meta(BaseListRealEstateSerializer.Meta):
-        model = DachaAd
-
-
-class PlotListRealEstate(BaseListRealEstateSerializer):
-    class Meta(BaseListRealEstateSerializer.Meta):
-        model = PlotAd
-
-
-class ParkingListRealEstate(BaseListRealEstateSerializer):
-    class Meta(BaseListRealEstateSerializer.Meta):
-        model = ParkingAd
 
 
 class PropertyCharacteristicsSerializer(serializers.Serializer):
@@ -218,6 +140,7 @@ class ImageSerializer(serializers.Serializer):
     ]
 )
 class BaseRealEstateAdSerializer(serializers.ModelSerializer):
+    public_id = serializers.CharField()
     user = serializers.SerializerMethodField()
     ad_type = serializers.CharField()
     rent_period = serializers.CharField()

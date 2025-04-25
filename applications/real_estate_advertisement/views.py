@@ -1,10 +1,11 @@
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import CursorPagination
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework import filters
+from rest_framework.viewsets import ModelViewSet
+from rest_framework import filters, status
 from django.db.models import Prefetch, F
-from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -15,8 +16,6 @@ from .models import (
 from .serializers import (
     ApartmentAdSerializer, HouseAdSerializer, CommercialAdSerializer,
     RoomAdSerializer, DachaAdSerializer, PlotAdSerializer, ParkingAdSerializer,
-    ApartmentListRealEstate, HouseListRealEstate, CommercialListRealEstate,
-    RoomListRealEstate, DachaListRealEstate, PlotListRealEstate, ParkingListRealEstate
 )
 from ..real_estate.models import RealEstateAdImage, RealEstateAd
 
@@ -52,28 +51,15 @@ class BaseRealEstateViewSet(ViewCountMixin, ModelViewSet):
         filters.OrderingFilter
     ]
 
-    list_serializer_class = None
-    detail_serializer_class = None
-
-    def get_serializer_class(self):
-        return self.list_serializer_class if self.action == 'list' else self.detail_serializer_class
+    serializer_class = None
 
     def get_queryset(self):
         queryset = super().get_queryset().filter(is_active=True)
         if self.action == 'list':
-            queryset = self._optimize_list_queryset(queryset)
+            queryset = self._optimize_detail_queryset(queryset)
         elif self.action == 'retrieve':
             queryset = self._optimize_detail_queryset(queryset)
         return queryset
-
-    def _optimize_list_queryset(self, queryset):
-        return queryset.select_related(
-            'city',
-            'region',
-        ).prefetch_related(
-            Prefetch('images',
-                     queryset=self.get_image_prefetch_queryset()),
-        )
 
     def _optimize_detail_queryset(self, queryset):
         return queryset.select_related(
@@ -110,13 +96,9 @@ class BaseRealEstateViewSet(ViewCountMixin, ModelViewSet):
 
 class ApartmentAdViewSet(BaseRealEstateViewSet):
     queryset = ApartmentAd.objects.all()
-    list_serializer_class = ApartmentListRealEstate
-    detail_serializer_class = ApartmentAdSerializer
+    serializer_class = ApartmentAdSerializer
 
     filterset_class = ApartmentAdFilter
-
-    def _optimize_list_queryset(self, queryset):
-        return super()._optimize_list_queryset(queryset)
 
     def _optimize_detail_queryset(self, queryset):
         return super()._optimize_detail_queryset(queryset).select_related(
@@ -128,15 +110,9 @@ class ApartmentAdViewSet(BaseRealEstateViewSet):
 
 class HouseAdViewSet(BaseRealEstateViewSet):
     queryset = HouseAd.objects.all()
-    list_serializer_class = HouseListRealEstate
-    detail_serializer_class = HouseAdSerializer
+    serializer_class = HouseAdSerializer
 
     filterset_class = HouseAdFilter
-
-    def _optimize_list_queryset(self, queryset):
-        return super()._optimize_list_queryset(queryset).select_related(
-            'rooms', 'building_type', 'floor'
-        )
 
     def _optimize_detail_queryset(self, queryset):
         return super()._optimize_detail_queryset(queryset).select_related(
@@ -146,17 +122,9 @@ class HouseAdViewSet(BaseRealEstateViewSet):
 
 class CommercialAdViewSet(BaseRealEstateViewSet):
     queryset = CommercialAd.objects.all()
-    list_serializer_class = CommercialListRealEstate
-    detail_serializer_class = CommercialAdSerializer
+    serializer_class = CommercialAdSerializer
 
     filterset_class = CommercialAdFilter
-
-    def _optimize_list_queryset(self, queryset):
-        return super()._optimize_list_queryset(queryset).select_related(
-            'object_type', 'residential_complex',
-            'building_type', 'construction_year',
-            'floor', 'max_floor'
-        )
 
     def _optimize_detail_queryset(self, queryset):
         return super()._optimize_detail_queryset(queryset).select_related(
@@ -168,15 +136,9 @@ class CommercialAdViewSet(BaseRealEstateViewSet):
 
 class RoomAdViewSet(BaseRealEstateViewSet):
     queryset = RoomAd.objects.all()
-    list_serializer_class = RoomListRealEstate
-    detail_serializer_class = RoomAdSerializer
+    serializer_class = RoomAdSerializer
 
     filterset_class = RoomAdFilter
-
-    def _optimize_list_queryset(self, queryset):
-        return super()._optimize_list_queryset(queryset).select_related(
-            'rooms', 'room_location', 'floor', 'max_floor'
-        )
 
     def _optimize_detail_queryset(self, queryset):
         return super()._optimize_detail_queryset(queryset).select_related(
@@ -186,15 +148,9 @@ class RoomAdViewSet(BaseRealEstateViewSet):
 
 class DachaAdViewSet(BaseRealEstateViewSet):
     queryset = DachaAd.objects.all()
-    list_serializer_class = DachaListRealEstate
-    detail_serializer_class = DachaAdSerializer
+    serializer_class = DachaAdSerializer
 
     filterset_class = DachaAdFilter
-
-    def _optimize_list_queryset(self, queryset):
-        return super()._optimize_list_queryset(queryset).select_related(
-            'rooms', 'building_type'
-        )
 
     def _optimize_detail_queryset(self, queryset):
         return super()._optimize_detail_queryset(queryset).select_related(
@@ -204,22 +160,15 @@ class DachaAdViewSet(BaseRealEstateViewSet):
 
 class PlotAdViewSet(BaseRealEstateViewSet):
     queryset = PlotAd.objects.all()
-    list_serializer_class = PlotListRealEstate
-    detail_serializer_class = PlotAdSerializer
+    serializer_class = PlotAdSerializer
     filterset_class = PlotAdFilter
 
 
 class ParkingAdViewSet(BaseRealEstateViewSet):
     queryset = ParkingAd.objects.all()
-    list_serializer_class = ParkingListRealEstate
-    detail_serializer_class = ParkingAdSerializer
+    serializer_class = ParkingAdSerializer
 
     filterset_class = ParkingAdFilter
-
-    def _optimize_list_queryset(self, queryset):
-        return super()._optimize_list_queryset(queryset).select_related(
-            'residential_complex'
-        )
 
     def _optimize_detail_queryset(self, queryset):
         return super()._optimize_detail_queryset(queryset).select_related(
@@ -241,7 +190,7 @@ class BaseQuerysetOptimizer:
             'region',
             'realestatead_ptr__price',
         ).prefetch_related(
-            Prefetch('images', 
+            Prefetch('images',
                     queryset=RealEstateAdImage.objects.only('id', 'ad', 'image', 'is_main')
                     .order_by('-is_main', 'id')),
         )
@@ -292,7 +241,7 @@ class BaseQuerysetOptimizer:
         Apply all relevant optimizations based on model type
         """
         queryset = cls.optimize_base_queryset(queryset)
-        
+
         if model_class == ApartmentAd:
             queryset = cls.optimize_apartment_queryset(queryset)
         elif model_class == HouseAd:
@@ -305,18 +254,17 @@ class BaseQuerysetOptimizer:
             queryset = cls.optimize_dacha_queryset(queryset)
         elif model_class == ParkingAd:
             queryset = cls.optimize_parking_queryset(queryset)
-            
+
         return queryset
 
 
-class MainPageViewSet(BaseRealEstateViewSet):
-    """
-    ViewSet for the main page that combines all advertisement types.
-    """
-    filter_backends = [DjangoFilterBackend]
+class RealEstateAdViewSet(BaseRealEstateViewSet):
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = MainPageFilter
     list_serializer_class = None
     detail_serializer_class = None
+    ordering_fields = ['approved_at', 'price']  # Поля для сортировки
+    ordering = '-approved_at'
     pagination_class = RealEstateCursorPagination
 
     # Cache model mappings to avoid recreating on each request
@@ -331,29 +279,28 @@ class MainPageViewSet(BaseRealEstateViewSet):
     }
 
     def get_queryset(self):
-        # Return a base queryset that will be filtered by MainPageFilter
         return ApartmentAd.objects.none()
 
     def list(self, request, *args, **kwargs):
         property_type = request.query_params.get('property_type', None)
         results = []
-        
+
         if property_type and property_type in self.MODEL_MAPPINGS:
             # Single property type with pagination
             model_class, serializer_class, _ = self.MODEL_MAPPINGS[property_type]
-            
+
             # Get filtered queryset from MainPageFilter
             queryset = self.filter_queryset(model_class.objects.filter(is_active=True))
-            
+
             # Apply optimizations
             queryset = BaseQuerysetOptimizer.optimize_queryset(queryset, model_class)
-            
+
             # Apply pagination
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = serializer_class(page, many=True, context={'request': request})
                 return self.get_paginated_response(serializer.data)
-            
+
             serializer = serializer_class(queryset, many=True, context={'request': request})
             results.extend(serializer.data)
         else:
@@ -361,10 +308,10 @@ class MainPageViewSet(BaseRealEstateViewSet):
             for model_class, serializer_class, _ in self.MODEL_MAPPINGS.values():
                 # Get filtered queryset from MainPageFilter
                 queryset = self.filter_queryset(model_class.objects.filter(is_active=True))
-                
+
                 # Apply optimizations
                 queryset = BaseQuerysetOptimizer.optimize_queryset(queryset, model_class)
-                
+
                 # Limit to 5 results per type when showing all
                 limited_queryset = queryset[:5]
                 serializer = serializer_class(limited_queryset, many=True, context={'request': request})
@@ -386,3 +333,37 @@ class MainPageViewSet(BaseRealEstateViewSet):
             {'id': 'parking', 'name': 'Парковки'},
         ]
         return Response(property_types)
+
+    def get_object(self):
+        """Находит объект по pk во всех связанных моделях с оптимизацией запроса"""
+        pk = self.kwargs.get('pk')
+        for model_class, _, _ in self.MODEL_MAPPINGS.values():
+            queryset = model_class.objects.filter(pk=pk)
+            queryset = BaseQuerysetOptimizer.optimize_queryset(queryset, model_class)
+            try:
+                return queryset.get()
+            except model_class.DoesNotExist:
+                continue
+        raise Http404("Объявление не найдено")
+
+    def retrieve(self, request, *args, **kwargs):
+        """Детализация одного объявления"""
+        try:
+            instance = self.get_object()
+        except Http404:
+            return Response(
+                {"detail": "Объявление не найдено"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Определяем нужный сериализатор
+        for model_class, serializer_class, _ in self.MODEL_MAPPINGS.values():
+            if instance._meta.model == model_class:
+                used_serializer = self.detail_serializer_class or serializer_class
+                serializer = used_serializer(instance, context={'request': request})
+                return Response(serializer.data)
+
+        return Response(
+            {"detail": "Ошибка определения типа объявления"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
