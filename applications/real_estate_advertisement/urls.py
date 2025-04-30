@@ -2,19 +2,19 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     ApartmentAdViewSet, HouseAdViewSet, CommercialAdViewSet,
-    RoomAdViewSet, PlotAdViewSet, DachaAdViewSet, ParkingAdViewSet,
-    RealEstateAdViewSet
+    RoomAdViewSet, DachaAdViewSet, PlotAdViewSet, ParkingAdViewSet,
+    MainPageViewSet
 )
 
 router = DefaultRouter()
-router.register('apartments', ApartmentAdViewSet, basename='apartment')
-router.register('houses', HouseAdViewSet, basename='house')
-router.register('commercial', CommercialAdViewSet, basename='commercial')
-router.register('rooms', RoomAdViewSet, basename='room')
-router.register('plots', PlotAdViewSet, basename='plot')
-router.register('dachas', DachaAdViewSet, basename='dacha')
-router.register('parkings', ParkingAdViewSet, basename='parking')
-router.register('', RealEstateAdViewSet, basename='main')
+router.register(r'apartments', ApartmentAdViewSet)
+router.register(r'houses', HouseAdViewSet)
+router.register(r'commercials', CommercialAdViewSet)
+router.register(r'rooms', RoomAdViewSet)
+router.register(r'dachas', DachaAdViewSet)
+router.register(r'plots', PlotAdViewSet)
+router.register(r'parkings', ParkingAdViewSet)
+router.register(r'main', MainPageViewSet, basename='main')
 
 urlpatterns = [
     path('', include(router.urls)),

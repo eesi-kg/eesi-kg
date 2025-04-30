@@ -107,7 +107,7 @@ class ApartmentAd(RealEstateAd):
     class Meta:
         verbose_name = "Квартира"
         verbose_name_plural = "Квартиры"
-
+        
 
 class HouseAd(RealEstateAd):
     title = models.CharField(max_length=255, blank=True, null=True, verbose_name='заголовок')

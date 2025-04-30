@@ -1,9 +1,10 @@
+from django.core.exceptions import FieldDoesNotExist
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, extend_schema_field
 from rest_framework import serializers
 from .models import ApartmentAd, HouseAd, CommercialAd, RoomAd, DachaAd, PlotAd, ParkingAd
 from ..common.serializers import SubscriptionSerializer, ExchangeSerializer
-from ..real_estate.models import MarketingImage
+from ..real_estate.models import MarketingImage, ConditionType
 from ..real_estate.serializers import PhoneNumberRealEstateSerializer, \
     ResidentialComplexSerializer, OtherSerializer, DocumentSerializer, SafetyRealEstateSerializer
 
@@ -140,6 +141,31 @@ class ImageSerializer(serializers.Serializer):
     ]
 )
 class BaseRealEstateAdSerializer(serializers.ModelSerializer):
+    _marketing_images_cache = {}
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.marketing_images_cache = {}
+        if not hasattr(self.__class__, '_condition_types_cache'):
+            self.__class__._condition_types_cache = {
+                ct.id: ct.name for ct in ConditionType.objects.all()
+            }
+    
+    def get_marketing_images(self, obj):
+        """Cache marketing images per property type"""
+        if obj.property_type not in self.marketing_images_cache:
+            self.marketing_images_cache[obj.property_type] = list(
+                MarketingImage.objects.filter(
+                    is_active=True,
+                    property_type=obj.property_type
+                ).order_by('-created_at').values('image')
+            )
+        return self.marketing_images_cache[obj.property_type]
+
+    def get_condition(self, obj):
+        """Get condition with caching"""
+        return self._condition_types_cache.get(obj.condition_id) if obj.condition_id else None
+
     public_id = serializers.CharField()
     user = serializers.SerializerMethodField()
     ad_type = serializers.CharField()
@@ -228,17 +254,14 @@ class BaseRealEstateAdSerializer(serializers.ModelSerializer):
                 })
         
         # Add marketing images for this property type
-        marketing_images = MarketingImage.objects.filter(
-            property_type=obj.property_type,
-            is_active=True
-        ).order_by('-created_at')
+        marketing_images = self.get_marketing_images(obj)
         
         for marketing_image in marketing_images:
-            if marketing_image.image and request:
+            if marketing_image['image'] and request:
                 images.append({
-                    'url': request.build_absolute_uri(marketing_image.image.url),
+                    'url': request.build_absolute_uri(marketing_image['image']),
                     'type': 'marketing',
-                    'property_type': marketing_image.property_type
+                    'property_type': obj.property_type
                 })
         
         return images
@@ -386,6 +409,17 @@ class DachaAdSerializer(BaseRealEstateAdSerializer):
 class ParkingAdSerializer(BaseRealEstateAdSerializer):
     residential_complex = ResidentialComplexSerializer()
 
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_total_area(self, obj):
+        try:
+            obj._meta.get_field("total_area")
+            return f"{obj.total_area} m2"
+        except FieldDoesNotExist:
+            return None
+
     class Meta(BaseRealEstateAdSerializer.Meta):
         model = ParkingAd
-        fields = ["residential_complex"] + BaseRealEstateAdSerializer.Meta.fields
+        fields = [
+                     field for field in BaseRealEstateAdSerializer.Meta.fields
+                     if field not in ["total_area", "property_characteristics"]
+                 ] + ["residential_complex"]
