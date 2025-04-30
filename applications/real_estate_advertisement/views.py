@@ -1,67 +1,140 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from .models import (
     ApartmentAd, HouseAd, CommercialAd, RoomAd, 
-    DachaAd, PlotAd, ParkingAd
+    DachaAd, PlotAd, ParkingAd, FCMToken
 )
 from .serializers import (
     ApartmentAdSerializer, HouseAdSerializer, CommercialAdSerializer,
-    RoomAdSerializer, DachaAdSerializer, PlotAdSerializer, ParkingAdSerializer
+    RoomAdSerializer, DachaAdSerializer, PlotAdSerializer, ParkingAdSerializer,
+    FCMTokenSerializer
 )
 from .filters import (
     ApartmentAdFilter, HouseAdFilter, CommercialAdFilter,
     RoomAdFilter, DachaAdFilter, PlotAdFilter, ParkingAdFilter,
     MainPageFilter
 )
+from .firebase_service import FirebaseService
 
 
-class ApartmentAdViewSet(viewsets.ModelViewSet):
+class FCMTokenViewSet(viewsets.ModelViewSet):
+    serializer_class = FCMTokenSerializer
+    http_method_names = ['post', 'delete']
+
+    def get_queryset(self):
+        return FCMToken.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Delete any existing tokens for this user and device type
+        FCMToken.objects.filter(
+            user=self.request.user,
+            device_type=serializer.validated_data['device_type']
+        ).delete()
+        
+        # Create new token
+        serializer.save(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            token = self.get_object()
+            token.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except FCMToken.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class BaseRealEstateViewSet(viewsets.ModelViewSet):
+    def perform_create(self, serializer):
+        instance = serializer.save(user=self.request.user)
+        self._send_notification(instance, 'created')
+        return instance
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self._send_notification(instance, 'updated')
+        return instance
+
+    def _send_notification(self, instance, action_type):
+        try:
+            firebase_service = FirebaseService()
+            
+            # Get all active FCM tokens
+            tokens = FCMToken.objects.filter(is_active=True).values_list('token', flat=True)
+            
+            if not tokens:
+                return
+
+            # Prepare notification data
+            title = f"New {instance.get_property_type_display()} {action_type}"
+            body = f"{instance.title} - {instance.price} {instance.currency}"
+            
+            # Additional data to send with notification
+            data = {
+                'type': 'real_estate',
+                'action': action_type,
+                'property_type': instance.property_type,
+                'public_id': instance.public_id
+            }
+
+            # Send notification to all devices
+            firebase_service.send_multicast_notification(
+                tokens=list(tokens),
+                title=title,
+                body=body,
+                data=data
+            )
+        except Exception as e:
+            logger.error(f"Failed to send notification: {str(e)}")
+
+
+class ApartmentAdViewSet(BaseRealEstateViewSet):
     queryset = ApartmentAd.objects.filter(is_active=True)
     serializer_class = ApartmentAdSerializer
     filterset_class = ApartmentAdFilter
     lookup_field = 'public_id'
 
 
-class HouseAdViewSet(viewsets.ModelViewSet):
+class HouseAdViewSet(BaseRealEstateViewSet):
     queryset = HouseAd.objects.filter(is_active=True)
     serializer_class = HouseAdSerializer
     filterset_class = HouseAdFilter
     lookup_field = 'public_id'
 
 
-class CommercialAdViewSet(viewsets.ModelViewSet):
+class CommercialAdViewSet(BaseRealEstateViewSet):
     queryset = CommercialAd.objects.filter(is_active=True)
     serializer_class = CommercialAdSerializer
     filterset_class = CommercialAdFilter
     lookup_field = 'public_id'
 
 
-class RoomAdViewSet(viewsets.ModelViewSet):
+class RoomAdViewSet(BaseRealEstateViewSet):
     queryset = RoomAd.objects.filter(is_active=True)
     serializer_class = RoomAdSerializer
     filterset_class = RoomAdFilter
     lookup_field = 'public_id'
 
 
-class DachaAdViewSet(viewsets.ModelViewSet):
+class DachaAdViewSet(BaseRealEstateViewSet):
     queryset = DachaAd.objects.filter(is_active=True)
     serializer_class = DachaAdSerializer
     filterset_class = DachaAdFilter
     lookup_field = 'public_id'
 
 
-class PlotAdViewSet(viewsets.ModelViewSet):
+class PlotAdViewSet(BaseRealEstateViewSet):
     queryset = PlotAd.objects.filter(is_active=True)
     serializer_class = PlotAdSerializer
     filterset_class = PlotAdFilter
     lookup_field = 'public_id'
 
 
-class ParkingAdViewSet(viewsets.ModelViewSet):
+class ParkingAdViewSet(BaseRealEstateViewSet):
     queryset = ParkingAd.objects.filter(is_active=True)
     serializer_class = ParkingAdSerializer
     filterset_class = ParkingAdFilter

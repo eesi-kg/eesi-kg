@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from applications.real_estate.models import RealEstateAd, RoomType, ResidentialComplex, Series, BuildingType, Year, \
     Floor, ObjectType, RoomLocation
 from core import settings
+from django.contrib.auth.models import User
 
 
 class PropertyTypeChoices(models.TextChoices):
@@ -415,3 +416,45 @@ class ParkingAd(RealEstateAd):
     class Meta:
         verbose_name = "Паркинг"
         verbose_name_plural = "Паркинг"
+
+
+class FCMToken(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='fcm_tokens',
+        verbose_name='User'
+    )
+    token = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name='FCM Token'
+    )
+    device_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('ios', 'iOS'),
+            ('android', 'Android')
+        ],
+        verbose_name='Device Type'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Created At'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Updated At'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Is Active'
+    )
+
+    class Meta:
+        verbose_name = 'FCM Token'
+        verbose_name_plural = 'FCM Tokens'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.device_type}"

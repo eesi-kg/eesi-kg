@@ -7,6 +7,7 @@ from ..common.serializers import SubscriptionSerializer, ExchangeSerializer
 from ..real_estate.models import MarketingImage, ConditionType
 from ..real_estate.serializers import PhoneNumberRealEstateSerializer, \
     ResidentialComplexSerializer, OtherSerializer, DocumentSerializer, SafetyRealEstateSerializer
+from .models import FCMToken
 
 
 class PropertyCharacteristicsSerializer(serializers.Serializer):
@@ -423,3 +424,13 @@ class ParkingAdSerializer(BaseRealEstateAdSerializer):
                      field for field in BaseRealEstateAdSerializer.Meta.fields
                      if field not in ["total_area", "property_characteristics"]
                  ] + ["residential_complex"]
+
+
+class FCMTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FCMToken
+        fields = ['token', 'device_type']
+        extra_kwargs = {
+            'token': {'required': True},
+            'device_type': {'required': True}
+        }
