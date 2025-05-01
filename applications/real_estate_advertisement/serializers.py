@@ -10,96 +10,31 @@ from ..real_estate.serializers import PhoneNumberRealEstateSerializer, \
 
 
 class PropertyCharacteristicsSerializer(serializers.Serializer):
-    heating_type = serializers.SerializerMethodField()
-    condition = serializers.SerializerMethodField()
-    internet = serializers.SerializerMethodField()
-    bathroom = serializers.SerializerMethodField()
-    gas = serializers.SerializerMethodField()
-    balcony = serializers.SerializerMethodField()
-    main_door = serializers.SerializerMethodField()
-    parking = serializers.SerializerMethodField()
-    telephone = serializers.SerializerMethodField()
-    furniture = serializers.SerializerMethodField()
-    floor_type = serializers.SerializerMethodField()
-    ceiling_height = serializers.FloatField()
-    safety = SafetyRealEstateSerializer(
-        many=True,
-        help_text="Безопасность",
-        read_only=True
-    )
-    other = OtherSerializer(
-        many=True,
-        read_only=True,
-        help_text="Прочее"
-    )
-    document = DocumentSerializer(
-        many=True,
-        help_text="Документы",
-        read_only=True
-    )
-
-    elevator = serializers.BooleanField()
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_heating_type(self, obj):
-        return getattr(obj.heating_type, 'name', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_condition(self, obj):
-        return getattr(obj.condition, 'name', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_internet(self, obj):
-        return getattr(obj.internet, 'internet', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_bathroom(self, obj):
-        return getattr(obj.bathroom, 'bathroom', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_gas(self, obj):
-        return getattr(obj.gas, 'gas', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_balcony(self, obj):
-        return getattr(obj.balcony, 'balcony', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_main_door(self, obj):
-        return getattr(obj.main_door, 'main_door', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_parking(self, obj):
-        return getattr(obj.parking, 'parking', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_telephone(self, obj):
-        return getattr(obj.telephone, 'telephone', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_furniture(self, obj):
-        return getattr(obj.furniture, 'furniture', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_floor_type(self, obj):
-        return getattr(obj.floor_type, 'floor_type', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_safety(self, obj):
-        return getattr(obj.safety, 'safety', None)
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_other(self, obj):
-        return getattr(obj.other, 'other', None)
+    heating_type = serializers.CharField(source='heating_type.name', allow_null=True)
+    condition = serializers.CharField(source='condition.name', allow_null=True)
+    internet = serializers.CharField(source='internet.internet', allow_null=True)
+    bathroom = serializers.CharField(source='bathroom.bathroom', allow_null=True)
+    gas = serializers.CharField(source='gas.gas', allow_null=True)
+    balcony = serializers.CharField(source='balcony.balcony', allow_null=True)
+    main_door = serializers.CharField(source='main_door.main_door', allow_null=True)
+    parking = serializers.CharField(source='parking.parking', allow_null=True)
+    telephone = serializers.CharField(source='telephone.telephone', allow_null=True)
+    furniture = serializers.CharField(source='furniture.furniture', allow_null=True)
+    floor_type = serializers.CharField(source='floor_type.floor_type', allow_null=True)
+    ceiling_height = serializers.FloatField(allow_null=True)
+    safety = SafetyRealEstateSerializer(many=True, read_only=True)
+    other = OtherSerializer(many=True, read_only=True)
+    document = DocumentSerializer(many=True, read_only=True)
+    elevator = serializers.BooleanField(allow_null=True)
 
 
 class LocationSerializer(serializers.Serializer):
-    region = serializers.CharField(source="region.region")
-    city = serializers.CharField(source="city.city")
-    district = serializers.SerializerMethodField()
-    address = serializers.CharField()
-    latitude = serializers.FloatField()
-    longitude = serializers.FloatField()
+    region = serializers.CharField(source='region.region', allow_null=True)
+    city = serializers.CharField(source='city.city', allow_null=True)
+    district = serializers.CharField(source='district.district', allow_null=True)
+    address = serializers.CharField(allow_null=True)
+    latitude = serializers.FloatField(allow_null=True)
+    longitude = serializers.FloatField(allow_null=True)
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_district(self, obj):
@@ -141,110 +76,47 @@ class ImageSerializer(serializers.Serializer):
     ]
 )
 class BaseRealEstateAdSerializer(serializers.ModelSerializer):
-    _marketing_images_cache = {}
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.marketing_images_cache = {}
-        if not hasattr(self.__class__, '_condition_types_cache'):
-            self.__class__._condition_types_cache = {
-                ct.id: ct.name for ct in ConditionType.objects.all()
-            }
-    
     def get_marketing_images(self, obj):
-        """Cache marketing images per property type"""
-        if obj.property_type not in self.marketing_images_cache:
-            self.marketing_images_cache[obj.property_type] = list(
-                MarketingImage.objects.filter(
-                    is_active=True,
-                    property_type=obj.property_type
-                ).order_by('-created_at').values('image')
-            )
-        return self.marketing_images_cache[obj.property_type]
-
-    def get_condition(self, obj):
-        """Get condition with caching"""
-        return self._condition_types_cache.get(obj.condition_id) if obj.condition_id else None
+        return list(
+            MarketingImage.objects.filter(
+                is_active=True,
+                property_type=obj.property_type
+            ).order_by('-created_at').values('image')
+        )
 
     public_id = serializers.CharField()
-    user = serializers.SerializerMethodField()
+    user = serializers.CharField(source='user.email')
     ad_type = serializers.CharField()
-    rent_period = serializers.CharField()
-    price = serializers.SerializerMethodField(help_text="Цена в валюте")
+    rent_period = serializers.CharField(allow_null=True)
+    price = serializers.CharField(source='get_price_display')
     is_total_price = serializers.BooleanField()
-    location = serializers.SerializerMethodField(
-        help_text="Геоданные объекта"
-    )
-    property_characteristics = serializers.SerializerMethodField(
-        help_text="Атрибуты недвижимости"
-    )
-    total_area = serializers.SerializerMethodField(
-        help_text="В квадратных метрах: ",
-    )
+    location = LocationSerializer(read_only=True)
+    property_characteristics = PropertyCharacteristicsSerializer(read_only=True)
+    total_area = serializers.CharField(source='get_total_area', allow_null=True)
     subscription = SubscriptionSerializer()
-    exchange = ExchangeSerializer()
-    installment = serializers.BooleanField()
-    mortgage = serializers.BooleanField()
-    measurements_docs = serializers.SerializerMethodField()
-    designing_docs = serializers.SerializerMethodField()
-    images = serializers.SerializerMethodField(
-        help_text="URL-ы картинок ",
-    )
-    contact_number = PhoneNumberRealEstateSerializer(
-        many=True,
-        source="real_estate_phones.all",
-        help_text="Контактный номер ",
-        read_only=True
-    )
+    exchange = ExchangeSerializer(allow_null=True)
+    installment = serializers.BooleanField(allow_null=True)
+    mortgage = serializers.BooleanField(allow_null=True)
+    measurements_docs = serializers.URLField(source='get_measurements_docs_url', allow_null=True)
+    designing_docs = serializers.URLField(source='get_designing_docs_url', allow_null=True)
+    images = serializers.SerializerMethodField()
+    contact_number = PhoneNumberRealEstateSerializer(source='real_estate_phones', many=True, read_only=True)
+    image_count = serializers.IntegerField(read_only=True)
+    has_main_image = serializers.BooleanField(read_only=True)
 
     class Meta:
         abstract = True
         fields = [
-            "public_id", "user", "ad_type", "rent_period", "title", "ENI_code", "description", "price", "is_total_price",
-            "total_area", "location", "property_characteristics", "exchange", "installment", "mortgage", "measurements_docs",
-            "designing_docs", "images", "link_Youtube", "created_at", "is_featured", "subscription", "view_count",
+            'public_id', 'user', 'ad_type', 'rent_period', 'title', 'ENI_code', 'description',
+            'price', 'is_total_price', 'total_area', 'location', 'property_characteristics',
+            'exchange', 'installment', 'mortgage', 'measurements_docs', 'designing_docs',
+            'images', 'link_Youtube', 'created_at', 'is_featured', 'subscription', 'view_count',
+            'contact_number', 'image_count', 'has_main_image'
         ]
 
-    @extend_schema_field(LocationSerializer)
-    def get_location(self, obj):
-        return LocationSerializer(obj).data
-
-    @extend_schema_field(PropertyCharacteristicsSerializer)
-    def get_property_characteristics(self, obj):
-        return PropertyCharacteristicsSerializer(obj).data
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_price(self, obj):
-        return f"{obj.price}{obj.currency}"
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_total_area(self, obj):
-        return f"{obj.total_area} m2"
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_user(self, obj):
-        return f"{obj.user.email} - {obj.user.full_name}"
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_measurements_docs(self, obj):
-        request = self.context.get('request')
-        if obj.measurements_docs and request:
-            return request.build_absolute_uri(obj.measurements_docs.url)
-        return None
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_designing_docs(self, obj):
-        request = self.context.get('request')
-        if obj.designing_docs and request:
-            return request.build_absolute_uri(obj.designing_docs.url)
-        return None
-
-    @extend_schema_field(serializers.ListSerializer(child=ImageSerializer()))
     def get_images(self, obj):
         request = self.context.get('request')
         images = []
-        
-        # Add real estate images
         for image in obj.images.all():
             if image.image and request:
                 images.append({
@@ -252,18 +124,13 @@ class BaseRealEstateAdSerializer(serializers.ModelSerializer):
                     'is_main': image.is_main,
                     'type': 'property'
                 })
-        
-        # Add marketing images for this property type
-        marketing_images = self.get_marketing_images(obj)
-        
-        for marketing_image in marketing_images:
+        for marketing_image in self.get_marketing_images(obj):
             if marketing_image['image'] and request:
                 images.append({
                     'url': request.build_absolute_uri(marketing_image['image']),
                     'type': 'marketing',
                     'property_type': obj.property_type
                 })
-        
         return images
 
 
