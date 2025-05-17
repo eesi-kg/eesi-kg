@@ -286,3 +286,5 @@ CLOUDINARY_URL = f"cloudinary://{CLOUDINARY_STORAGE['API_KEY']}:{CLOUDINARY_STOR
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 LOGO_PATH = "/Users/jumabekovs/Desktop/Eesi-Back-End/templates/images/logo.png"
+
+# settings.py
